@@ -122,6 +122,14 @@ CREATE TABLE subscriptions (
 );
 
 <br>
+## 📸 Screenshots
+
+### 🧾 Subscription Table
+![Table](./screenshots/table.png)
+
+### 📝 Add Modal
+![Modal](./screenshots/add.png)
+
 ⚠️ Important Notes
 
 
