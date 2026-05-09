@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './index.css';
 
 function SubscriptionList() {
   const [subscriptions, setSubscriptions] = useState([]);
+
   const [formData, setFormData] = useState({
     user_email: '',
     plan_name: '',
@@ -13,6 +15,7 @@ function SubscriptionList() {
     monthly_cost: '',
     status: 'Active'
   });
+
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -25,17 +28,11 @@ function SubscriptionList() {
     axios
       .get('http://localhost:5000/api/subscriptions')
       .then((res) => setSubscriptions(res.data))
-      .catch((err) => {
-        console.error('Error fetching data:', err);
-        toast.error('Error fetching subscriptions');
-      });
+      .catch(() => toast.error('Error fetching subscriptions'));
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const openAddModal = () => {
@@ -67,178 +64,143 @@ function SubscriptionList() {
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Frontend date validation
-  const start = new Date(formData.start_date);
-  const end = new Date(formData.end_date);
+    const start = new Date(formData.start_date);
+    const end = new Date(formData.end_date);
 
-  if (end < start) {
-    toast.error('End date cannot be before start date');
-    return;
-  }
+    if (end < start) {
+      toast.error('End date cannot be before start date');
+      return;
+    }
 
-  const url = isEditing
-    ? `http://localhost:5000/api/subscriptions/${editId}`
-    : 'http://localhost:5000/api/subscriptions';
+    const url = isEditing
+      ? `http://localhost:5000/api/subscriptions/${editId}`
+      : 'http://localhost:5000/api/subscriptions';
 
-  const method = isEditing ? axios.put : axios.post;
+    const method = isEditing ? axios.put : axios.post;
 
-  method(url, formData)
-    .then((res) => {
-      toast.success(res.data.message || 'Success');
-      setShowModal(false);
-      fetchSubscriptions();
-    })
-    .catch((err) => {
-      console.error('Error:', err);
-      const msg = err.response?.data?.message || err.response?.data?.error || 'Operation failed';
-      toast.error(msg);
-    });
-};
-
+    method(url, formData)
+      .then((res) => {
+        toast.success(res.data.message || 'Success');
+        setShowModal(false);
+        fetchSubscriptions();
+      })
+      .catch(() => toast.error('Operation failed'));
+  };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this subscription?')) {
+    if (window.confirm('Are you sure?')) {
       axios
         .delete(`http://localhost:5000/api/subscriptions/${id}`)
-        .then((res) => {
-          toast.success(res.data.message || 'Deleted');
+        .then(() => {
+          toast.success('Deleted');
           fetchSubscriptions();
         })
-        .catch((err) => {
-          console.error('Delete failed:', err);
-          toast.error('Failed to delete subscription');
-        });
+        .catch(() => toast.error('Delete failed'));
     }
   };
 
+  const sortedSubscriptions = [...subscriptions].sort(
+    (a, b) => a.subscription_id - b.subscription_id
+  );
+
   return (
-    <div style={{ padding: '20px' }}>
-      <ToastContainer position="top-right" autoClose={3000} />
+    <div className="app-wrapper">
 
-      {/* Add Button */}
-      <button
-        onClick={openAddModal}
-        style={{
-          marginBottom: '10px',
-          padding: '8px 16px',
-          backgroundColor: '#4CAF50',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        + Add Subscription
-      </button>
+      <div className="main-container">
 
-      {/* Modal */}
-      {showModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0, left: 0,
-            width: '100%', height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000
-          }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              padding: '20px',
-              borderRadius: '8px',
-              width: '400px'
-            }}
-          >
-            <h2>{isEditing ? 'Edit Subscription' : 'Add New Subscription'}</h2>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <input type="email" name="user_email" placeholder="Email" value={formData.user_email} onChange={handleChange} required />
-              <input type="text" name="plan_name" placeholder="Plan Name" value={formData.plan_name} onChange={handleChange} required />
-              <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} required />
-              <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} required />
-              <input type="number" name="monthly_cost" placeholder="Monthly Cost" value={formData.monthly_cost} onChange={handleChange} required />
-              <select name="status" value={formData.status} onChange={handleChange} required>
-                <option value="Active">Active</option>
-                <option value="Expired">Expired</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
+    
+        <h1 className="page-title">
+          Subscription Management System
+        </h1>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button type="submit">{isEditing ? 'Update' : 'Add'}</button>
-                <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
+        <div className="subscription-header">
+          <h2>All Subscriptions</h2>
+
+          <button className="add-btn" onClick={openAddModal}>
+            + Add Subscription
+          </button>
         </div>
-      )}
 
-      {/* Table */}
-      <h2 style={{ marginTop: '30px' }}>All Subscriptions</h2>
-      <table border="1" cellPadding="8" style={{ marginTop: '10px', borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Plan</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Cost</th>
-            <th>Status</th>
-            <th>Remaining Days</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {subscriptions.map((sub) => {
-            const remainingDays = Math.ceil(
-              (new Date(sub.end_date) - new Date()) / (1000 * 60 * 60 * 24)
-            );
+        <ToastContainer position="top-right" autoClose={3000} />
 
-            return (
-              <tr key={sub.subscription_id}>
-                <td>{sub.subscription_id}</td>
-                <td>{sub.user_email}</td>
-                <td>{sub.plan_name}</td>
-                <td>{new Date(sub.start_date).toLocaleDateString()}</td>
-                <td>{new Date(sub.end_date).toLocaleDateString()}</td>
-                <td>₹{sub.monthly_cost}</td>
-                <td>{sub.status}</td>
-                <td>{remainingDays >= 0 ? remainingDays : 'Expired'}</td>
-                <td>
-                  <button
-                    onClick={() => openEditModal(sub)}
-                    style={{
-                      backgroundColor: '#2196F3',
-                      color: '#fff',
-                      border: 'none',
-                      marginRight: '5px',
-                      padding: '5px 10px',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sub.subscription_id)}
-                    style={{
-                      backgroundColor: 'red',
-                      color: 'white',
-                      border: 'none',
-                      padding: '5px 10px',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
+        {showModal && (
+          <div className="modal-overlay">
+            <div className="modal-box">
+
+              <h2>{isEditing ? 'Edit Subscription' : 'Add Subscription'}</h2>
+
+              <form className="subscription-form" onSubmit={handleSubmit}>
+                <input name="user_email" value={formData.user_email} onChange={handleChange} placeholder="Email" />
+                <input name="plan_name" value={formData.plan_name} onChange={handleChange} placeholder="Plan Name" />
+                <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} />
+                <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} />
+                <input type="number" name="monthly_cost" value={formData.monthly_cost} onChange={handleChange} placeholder="Cost" />
+
+                <select name="status" value={formData.status} onChange={handleChange}>
+                  <option>Active</option>
+                  <option>Expired</option>
+                  <option>Cancelled</option>
+                </select>
+
+                <div className="form-buttons">
+                  <button type="submit">{isEditing ? 'Update' : 'Add'}</button>
+                  <button type="button" onClick={() => setShowModal(false)}>Cancel</button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        )}
+
+        <div className="table-container">
+          <table className="subscription-table">
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Plan</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Cost</th>
+                <th>Status</th>
+                <th>Days Left</th>
+                <th>Actions</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+
+            <tbody>
+              {sortedSubscriptions.map((sub) => {
+                const days = Math.ceil(
+                  (new Date(sub.end_date) - new Date()) / (1000 * 60 * 60 * 24)
+                );
+
+                return (
+                  <tr key={sub.subscription_id}>
+                    <td>{sub.subscription_id}</td>
+                    <td>{sub.user_email}</td>
+                    <td>{sub.plan_name}</td>
+                    <td>{new Date(sub.start_date).toLocaleDateString()}</td>
+                    <td>{new Date(sub.end_date).toLocaleDateString()}</td>
+                    <td>₹{sub.monthly_cost}</td>
+                    <td>{sub.status}</td>
+                    <td>{days >= 0 ? days : 'Expired'}</td>
+
+                    <td>
+                      <button className="edit-btn" onClick={() => openEditModal(sub)}>Edit</button>
+                      <button className="delete-btn" onClick={() => handleDelete(sub.subscription_id)}>Delete</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
     </div>
   );
 }
