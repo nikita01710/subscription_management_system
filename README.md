@@ -86,7 +86,7 @@ npm install
 
 npm run dev
 <br>
-
+<br>
 🔗 API Endpoints
 
 
@@ -122,13 +122,11 @@ CREATE TABLE subscriptions (
 );
 
 <br>
-## 📸 Screenshots
+📸 Screenshots
 
 ### 🧾 Subscription Table
 ![Table](./screenshots/table.png)
 
-### 📝 Add Modal
-![Modal](./screenshots/add.png)
 
 ⚠️ Important Notes
 
